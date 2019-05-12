@@ -1,4 +1,5 @@
-# Tiny Web server GOAT - A deliberately insecure Web Server for exploiting training
+# TinyWeb Server Goat - A deliberately insecure webserver deamon for learning purpose
+
 
 ### *WARNING 1*: While running this program your machine will be extremely vulnerable to attack. You should disconnect from the Internet while using this program.
 
