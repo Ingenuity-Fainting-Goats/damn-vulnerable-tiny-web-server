@@ -2,7 +2,7 @@ FROM ubuntu:latest
 MAINTAINER Alessandro B. "rhpco"
 
 RUN apt-get update
-RUN apt-get install -y clang
+RUN apt-get install -y clang-7
 RUN apt-get install -y make
 RUN apt-get install -y libc6 libc6-dev
 RUN apt-get install -y g++-multilib
