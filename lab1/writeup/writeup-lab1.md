@@ -129,22 +129,22 @@ accept request, fd is 14, pid is 23078
 =================================================================
 ==23078==ERROR: AddressSanitizer: stack-buffer-overflow on address 0xffc0ca78 at pc 0x08182515 bp 0xffc0b3e8 sp 0xffc0b3dc
 WRITE of size 1 at 0xffc0ca78 thread T0
-    #0 0x8182514 in url_decode /home/rhpco/Documents/PERSONALE/DEVELOP/tiny-webserver-exploiting/lab1/app/tiny.c:259:21
-    #1 0x8182e08 in parse_request /home/rhpco/Documents/PERSONALE/DEVELOP/tiny-webserver-exploiting/lab1/app/tiny.c:298:5
-    #2 0x8183e60 in process /home/rhpco/Documents/PERSONALE/DEVELOP/tiny-webserver-exploiting/lab1/app/tiny.c:349:5
-    #3 0x8184bdc in main /home/rhpco/Documents/PERSONALE/DEVELOP/tiny-webserver-exploiting/lab1/app/tiny.c:435:9
+    #0 0x8182514 in url_decode /home/rhpco/tiny-webserver-exploiting/lab1/app/tiny.c:259:21
+    #1 0x8182e08 in parse_request /home/rhpco/tiny-webserver-exploiting/lab1/app/tiny.c:298:5
+    #2 0x8183e60 in process /home/rhpco/tiny-webserver-exploiting/lab1/app/tiny.c:349:5
+    #3 0x8184bdc in main /home/rhpco/tiny-webserver-exploiting/lab1/app/tiny.c:435:9
     #4 0xf7c14e80 in __libc_start_main (/lib32/libc.so.6+0x18e80)
-    #5 0x8060b01 in _start (/home/rhpco/Documents/PERSONALE/DEVELOP/tiny-webserver-exploiting/lab1/app/tiny-lab1-addressanitizer+0x8060b01)
+    #5 0x8060b01 in _start (/home/rhpco/tiny-webserver-exploiting/lab1/app/tiny-lab1-addressanitizer+0x8060b01)
 
 Address 0xffc0ca78 is located in stack of thread T0 at offset 536 in frame
-    #0 0x8183cef in process /home/rhpco/Documents/PERSONALE/DEVELOP/tiny-webserver-exploiting/lab1/app/tiny.c:346
+    #0 0x8183cef in process /home/rhpco/tiny-webserver-exploiting/lab1/app/tiny.c:346
 
   This frame has 2 object(s):
     [16, 536) 'req' (line 348) <== Memory access at offset 536 overflows this variable
     [672, 760) 'sbuf' (line 351)
 HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
       (longjmp and C++ exceptions *are* supported)
-SUMMARY: AddressSanitizer: stack-buffer-overflow /home/rhpco/Documents/PERSONALE/DEVELOP/tiny-webserver-exploiting/lab1/app/tiny.c:259:21 in url_decode
+SUMMARY: AddressSanitizer: stack-buffer-overflow /home/rhpco/tiny-webserver-exploiting/lab1/app/tiny.c:259:21 in url_decode
 Shadow bytes around the buggy address:
   0x3ff818f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
   0x3ff81900: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 00 00
