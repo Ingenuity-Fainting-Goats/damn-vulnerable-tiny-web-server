@@ -208,7 +208,7 @@ A questo punto a seguito dell'analisi manuale sappiamo che abbiamo la possibilit
 
 Visualizzando lo stato dello stack tramite il seguente comando `x/200x $esp-600`
 che significa:
-- fammi vedere 600 indirizzi in formato hex partendo da `$esp-600`, infatti il valore di `$esp` risulta essere ( ricordandoci che stack cresce verso il basso ) otteniamo:
+- fammi vedere 200 indirizzi in formato hex partendo da `$esp-600`, infatti il valore di `$esp` risulta essere ( ricordandoci che stack cresce verso il basso ) otteniamo:
 ```
 gdb-peda$ x/200x $esp-600
 0xffffd3a8:     0x00000000      0x00000000      0x00000000      0x00000000
@@ -228,6 +228,7 @@ gdb-peda$ x/200x $esp-600
 0xffffd608:     0xffffd63c      0xf7ffdc44    
 ```
 Quindi sappiamo che l'indirizzo e il valore dello `Stack Pointer ESP` risultano essere:
+```
 (gdb) x/x $esp
 0xffffcb30:     0x00000000
 ```
