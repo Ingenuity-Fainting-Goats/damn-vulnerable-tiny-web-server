@@ -1,4 +1,4 @@
-# Damn Vulnerable Tiny Web Server - A deliberately insecure webserver deamon for learning purpose
+# Damn Vulnerable Tiny Web Server - A deliberately insecure webserver daemon for learning purpose
 
 
 ### *WARNING 1*: While running this program your machine will be extremely vulnerable to attack. You should disconnect from the Internet while using this program.
@@ -23,3 +23,5 @@ Every labs have specific learning objectives by example:
 
 ## Why
 Learn, Learn, Understand, Fail and Learn Again.
+
+
