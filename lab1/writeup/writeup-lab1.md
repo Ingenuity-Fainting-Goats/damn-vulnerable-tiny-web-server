@@ -263,25 +263,6 @@ Il tutto calcolato come segue:
 PAYLOAD = PADDING*PADDING_SIZE + NOP*(NOP_SIZE/2) + SHELLCODE + OVERWRITE_EIP_WITH_SHELLCODE_ADDRESS
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Identificare Return Address
 
 Il corretto `SHELLCODE Address` da usare per sovrascrivere il registro `EIP` verrà scelto tra i valori identificati nello stack contenenti  valori di NOP codes `x90` sfruttando la tenica di `NOP sleed`. 
