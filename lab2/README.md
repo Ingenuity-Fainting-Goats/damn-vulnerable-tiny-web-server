@@ -1,6 +1,4 @@
-# Writeup - return-into-libc - lab2
-
-This project is a binary exploiting lab based on this public repo [https://github.com/shenfeng/tiny-web-server](https://github.com/shenfeng/tiny-web-server)
+# Writeup - return-into-libc - NX bypass - lab2
 
 ___
 
@@ -57,3 +55,6 @@ docker kill damn-vulnerable-tinywebserver-lab2
 ```
 docker rm --force damn-vulnerable-tinywebserver-lab2   
 ```
+
+___
+This project is a binary exploiting lab based on this public repo [https://github.com/shenfeng/tiny-web-server](https://github.com/shenfeng/tiny-web-server)

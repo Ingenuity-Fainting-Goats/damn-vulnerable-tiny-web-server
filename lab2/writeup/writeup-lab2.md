@@ -1,4 +1,18 @@
-# Writeup - Return-to-libc - lab2
+# Writeup - Return-to-libc - NX Bypass - lab2
+
+Tale tecnica è utile come NX Bypass come mostrato di seguito
+```
+root@6c712780745b:/opt# execnoaslr gdb tiny-lab2
+GNU gdb (Ubuntu 8.1-0ubuntu3) 8.1.0.20180409-git
+...
+gdb-peda$ checksec
+CANARY    : disabled
+FORTIFY   : disabled
+NX        : ENABLED
+PIE       : disabled
+RELRO     : Partial
+```
+
 
 ## OFFSET identification 
 Identificare l'offset della variabile nel frame che va in overflow è stato effettuando traite radare effettuando disassemblato della funzione identificata come vulnerabile da AddressSanitizer, in piu guardando disassemblato è stato possibile identificare quale fosse il buffer vulnerabile che come visto la fase di overflow è in url_decode che lavora su puntatori di variabili istanziate in process pertanto overflow sarà relativo il frame di esecuzione di process:
