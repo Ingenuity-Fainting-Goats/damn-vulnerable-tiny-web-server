@@ -18,9 +18,9 @@ docker run --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --name damn-vu
 docker exec -it damn-vulnerable-tinywebserver-lab2 /bin/bash
 ```
 
-** !!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!! **
+**!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!**
 Execute the vulnerable Web Server using following commands:
-** !!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!! **
+**!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!**
 
 
 ### Execute Vulnerable Tiny Web Server
