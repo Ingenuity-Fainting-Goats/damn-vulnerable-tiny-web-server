@@ -19,9 +19,10 @@ docker exec -it damn-vulnerable-tinywebserver-lab2 /bin/bash
 ```
 
 **!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!**
-Execute the vulnerable Web Server using following commands:
-**!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!**
 
+Execute the vulnerable Web Server using following commands:
+
+**!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!**
 
 ### Execute Vulnerable Tiny Web Server
 Docker doesn't support the well known command useful to disable ASLR
