@@ -146,7 +146,7 @@ la stringa `/bin/sh` è stata identificata all'indirizzo `0xf7f688cf` e potrà e
 
 Il payload d'esecuzione da inietare sarà così costruito:
 
-[`AAA..AAAA*524`] + [` 4 bytes indirizzo system()`]+['4 bytes indirizzo "/bin/sh"`]
+[`AAA..AAAA*524`] + [` 4 bytes indirizzo system()`]+[`'4 bytes indirizzo "/bin/sh"`]
 
 ## Exploit
 
