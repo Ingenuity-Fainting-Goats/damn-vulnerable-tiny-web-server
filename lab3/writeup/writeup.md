@@ -6,7 +6,7 @@
 
 Partendo dai precedenti lab è stata creata la seguente ROP Chain che permette di eseguire la systemcall `execve("/bin/sh", 0, 0)`.
 
-La ROP Chain è stata costruita usando solamente gadget presenti nel binario in modo da eludere la ASLR (il programma è stato compilato con il flag `-static` per aumentare la quantità di gadget presenti, essendo il programma di dimensioni ridotte).
+La ROP Chain è stata costruita usando solamente gadget presenti nel binario in modo da eludere la ASLR (il programma è stato compilato con il flag `-static` per aumentare la quantità di gadget presenti, essendo di dimensioni ridotte).
 
 Per individuare i gadget usati è possibile usare `objdump` o `RopGadget` (https://github.com/JonathanSalwan/ROPgadget), disponibile anche in GDB peda. 
 
@@ -28,13 +28,13 @@ Occorre quindi:
   valore sarà `0x0`;
 - `edx`: usato per putare a array veriabili d'ambiente; non usato in questo caso,
   quindi sarà `0x0`.
-- trovare ed usare gadget `int 0x80` per effettuare systemcall.
+- trovare ed usare gadget con `int 0x80` per effettuare systemcall.
 
 ### Descrizione gadget usati
 
 #### Scrittura di "/bin/sh" in memoria
 
-Per prima cosa è stata scritta la stringa "/bin/sh" in memoria, al fine di riutilizzara in seguito durante la systemcall.
+Per prima cosa è stata scritta la stringa "/bin/sh" in memoria, al fine di riutilizzarla in seguito (EBX dovrà puntare all'inizio della stringa).
 
 I gadget e i valori utilizzati a tal proposito:
 
