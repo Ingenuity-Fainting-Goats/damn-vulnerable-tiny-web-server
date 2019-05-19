@@ -6,7 +6,13 @@
 
 Partendo dai precedenti lab è stata creata la seguente ROP Chain che permette di eseguire la systemcall `execve("/bin/sh", 0, 0)`.
 
-La ROP Chain è stata costruita usando solamente gadget presenti nella sezione `.text` del programma in modo da eludere la ASLR (il programma è stato compilato con il flag `-static` per aumentare la quantità di gadget presenti, essendo il programma di dimensioni ridotte).
+La ROP Chain è stata costruita usando solamente gadget presenti nel binario in modo da eludere la ASLR (il programma è stato compilato con il flag `-static` per aumentare la quantità di gadget presenti, essendo il programma di dimensioni ridotte).
+
+Per individuare i gadget usati è possibile usare `objdump` o `RopGadget` (https://github.com/JonathanSalwan/ROPgadget), disponibile anche in GDB peda. 
+
+Il file `gadgets` riporta la lista completa dei gadget presenti.
+
+NOTA: di default, viene inclusa la versione pre-compilata `tiny-lab3-precomp` del webserver in modo da mantenere come riferimento gli stessi indirizzi presenti nel writeup. In alternativa è possibile decommentare la riga `# RUN make` per ricompilare il server.
 
 ## Sviluppo ROP Chain
 
