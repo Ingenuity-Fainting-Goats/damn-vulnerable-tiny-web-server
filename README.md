@@ -5,7 +5,7 @@ A deliberately insecure webserver for learning purpose, this project is a binary
 ## Binary Exploiting Techniques (x86 - 32bit)
 - *lab1/* - Stack Buffer Overflow - Basic
 - *lab2/* - Return to Libc - NX bypass
-- *lab/3* - Return Oriented Programming with execve() payload - NX bypass + ASLR bypass (compiled static)
+- *lab3/* - Return Oriented Programming with execve() payload - NX bypass + ASLR bypass (compiled static)
 
 ## What
 
