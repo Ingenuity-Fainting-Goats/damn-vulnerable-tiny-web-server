@@ -1,4 +1,4 @@
-# Writeup - return-into-libc - NX bypass - lab2
+# Writeup - return-to-libc - NX bypass - lab2
 
 ___
 

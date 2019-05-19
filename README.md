@@ -1,24 +1,27 @@
-# Damn Vulnerable Tiny Web Server - A deliberately insecure webserver for learning purpose
+# Damn Vulnerable Tiny Web Server
 
+A deliberately insecure webserver for learning purpose, this project is a binary exploiting lab based on public source code [https://github.com/shenfeng/tiny-web-server](https://github.com/shenfeng/tiny-web-server)
 
-### *WARNING 1*: While running this program your machine will be extremely vulnerable to attack. You should disconnect from the Internet while using this program.
-
-This project is a binary exploiting lab based on this public repo [https://github.com/shenfeng/tiny-web-server](https://github.com/shenfeng/tiny-web-server)
-
+## Binary Exploiting Techniques (x86 - 32bit)
+- *lab1/* - Stack Buffer Overflow - Basic
+- *lab2/* - Return to Libc - NX bypass
 
 ## What
 
-Every labs has the same vulnerable webserver binary running on docker container, try to navigate through single labs and follow instructions.
-Every labs have specific learning objectives by example:
+Every labs has the same vulnerable webserver binary running on docker container, try to navigate through single labs and follow instructions. Following learning objectives will be covered:
 - Stack Buffer Overflow basics
-- Return-oriented-programming exploiting technique
 - Return-into-libc exploiting technique
+- Return-oriented-programming exploiting technique
 - NX & ASLR bypass exploiting technique
 - AddressSanitizer tool
 - SPIKE fuzzer 
 - etc.. etc...
 
 ## Why
-Learn, Learn, Understand, Fail and Learn Again.
+- For fun and (no) profit 
+- Learn, Learn, Understand, Fail and Learn Again.
 
 
+## Author
+- rhpco - Alessandro B. - twitter.com/rhpco
+- dgui17 - Giovanni 
