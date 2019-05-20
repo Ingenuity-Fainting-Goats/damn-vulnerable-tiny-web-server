@@ -1,4 +1,4 @@
-# ROP Exploit
+# execve() ROP
 
 - compilazione con flag `-static`;
 - stack-protectors disabilitati;
